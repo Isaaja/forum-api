@@ -1,12 +1,12 @@
 const ThreadRepositoryPostgres = require("../ThreadRepositoryPostgres");
-const Thread = require("../../../../Domains/threads/entities/Thread");
-const AddedThread = require("../../../../Domains/threads/entities/AddedThread");
-const ThreadsTableTestHelper = require("../../../../../tests/ThreadTableTestHelper");
-const UsersTableTestHelper = require("../../../../../tests/UsersTableTestHelper");
+const Thread = require("../../../Domains/threads/entities/Thread");
+const AddedThread = require("../../../Domains/threads/entities/AddedThread");
+const ThreadsTableTestHelper = require("../../../../tests/ThreadTableTestHelper");
+const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
 
-const pool = require("../../../database/postgres/pool");
-const NotFoundError = require("../../../../Commons/exceptions/NotFoundError");
-const AuthorizationError = require("../../../../Commons/exceptions/AuthorizationError");
+const pool = require("../../database/postgres/pool");
+const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
+const AuthorizationError = require("../../../Commons/exceptions/AuthorizationError");
 
 describe("ThreadRepositoryPostgres", () => {
   beforeEach(async () => {
@@ -75,6 +75,7 @@ describe("ThreadRepositoryPostgres", () => {
         title: "judul",
         body: "isi",
         owner: "user-123",
+        createdAt: "2021-08-08T07:59:48.766Z",
       });
 
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(
@@ -89,8 +90,9 @@ describe("ThreadRepositoryPostgres", () => {
       expect(thread.id).toBe("thread-123");
       expect(thread.title).toBe("judul");
       expect(thread.body).toBe("isi");
-      expect(thread.username).toBe("dicoding"); // dari UsersTableTestHelper default username
-      expect(thread.date).toBeDefined();
+      expect(thread.username).toBe("dicoding");
+      expect(new Date(thread.date)).toBeInstanceOf(Date);
+      expect(new Date(thread.date).getTime()).not.toBeNaN();
     });
   });
 
@@ -143,7 +145,11 @@ describe("ThreadRepositoryPostgres", () => {
       // Action & Assert
       await expect(
         threadRepositoryPostgres.verifyThreadOwner("thread-123", "user-123")
-      ).resolves.not.toThrow();
+      ).resolves.not.toThrowError(NotFoundError);
+
+      await expect(
+        threadRepositoryPostgres.verifyThreadOwner("thread-123", "user-123")
+      ).resolves.not.toThrowError(AuthorizationError);
     });
   });
 });

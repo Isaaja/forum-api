@@ -1,6 +1,6 @@
 const ThreadsTableTestHelper = require("../../../../tests/ThreadTableTestHelper");
 const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
-const ThreadRepositoryPostgres = require("../../../Infrastructures/repository/threads/ThreadRepositoryPostgres");
+const ThreadRepositoryPostgres = require("../../../Infrastructures/repository/ThreadRepositoryPostgres");
 const AddThreadUseCase = require("../../../Applications/use_case/thread/AddThreadUseCase");
 const pool = require("../../../Infrastructures/database/postgres/pool");
 const AuthorizationError = require("../../../Commons/exceptions/AuthorizationError");

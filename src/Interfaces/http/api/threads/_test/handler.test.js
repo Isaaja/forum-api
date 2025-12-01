@@ -39,6 +39,8 @@ describe("ThreadsHandler", () => {
       id: "thread-123",
       title: "a title",
       body: "body",
+      date: "2025-12-01T10:00:00.000Z",
+      username: "dicoding",
       comments: [],
     };
 

@@ -13,7 +13,9 @@ describe("AddCommentUseCase", () => {
     };
 
     const mockThreadRepository = {
-      getThreadById: jest.fn().mockRejectedValue(new NotFoundError("thread tidak ditemukan")),
+      getThreadById: jest
+        .fn()
+        .mockRejectedValue(new NotFoundError("thread tidak ditemukan")),
     };
 
     const mockCommentRepository = {
@@ -26,8 +28,12 @@ describe("AddCommentUseCase", () => {
     });
 
     // Act & Assert
-    await expect(addCommentUseCase.execute(useCasePayload)).rejects.toThrow(NotFoundError);
-    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith("thread-123");
+    await expect(addCommentUseCase.execute(useCasePayload)).rejects.toThrow(
+      NotFoundError
+    );
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(
+      "thread-123"
+    );
     expect(mockCommentRepository.addComment).not.toHaveBeenCalled();
   });
 
@@ -39,12 +45,6 @@ describe("AddCommentUseCase", () => {
       owner: "user-123",
     };
 
-    const expectedAddedComment = new AddedComment({
-      id: "comment-123",
-      content: useCasePayload.content,
-      owner: useCasePayload.owner,
-    });
-
     const mockThreadRepository = {
       getThreadById: jest.fn().mockResolvedValue({
         id: "thread-123",
@@ -55,7 +55,13 @@ describe("AddCommentUseCase", () => {
     };
 
     const mockCommentRepository = {
-      addComment: jest.fn().mockResolvedValue(expectedAddedComment),
+      addComment: jest.fn().mockResolvedValue(
+        new AddedComment({
+          id: "comment-123",
+          content: "Isi komentar",
+          owner: "user-123",
+        })
+      ),
     };
 
     const addCommentUseCase = new AddCommentUseCase({
@@ -66,12 +72,21 @@ describe("AddCommentUseCase", () => {
     // Act
     const result = await addCommentUseCase.execute(useCasePayload);
 
+    const expected = new AddedComment({
+      id: "comment-123",
+      content: useCasePayload.content,
+      owner: useCasePayload.owner,
+    });
+
     // Assert
-    expect(result).toEqual(expectedAddedComment);
-    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith("thread-123");
+    expect(result).toStrictEqual(expected);
+
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(
+      "thread-123"
+    );
+
     expect(mockCommentRepository.addComment).toHaveBeenCalledWith(
       new Comment(useCasePayload)
     );
   });
 });
-

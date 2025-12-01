@@ -65,16 +65,26 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
   async getRepliesByCommentId(commentId) {
     const query = {
-      text: `SELECT replies.id, replies.content, replies.created_at as date, users.username, replies.is_deleted
-             FROM replies
-             LEFT JOIN users ON replies.owner = users.id
-             WHERE replies.comment_id = $1
-             ORDER BY replies.created_at ASC`,
+      text: `
+      SELECT 
+        replies.id, 
+        replies.content, 
+        replies.created_at AS date, 
+        users.username, 
+        replies.is_deleted
+      FROM replies
+      LEFT JOIN users ON replies.owner = users.id
+      WHERE replies.comment_id = $1
+      ORDER BY replies.created_at ASC
+    `,
       values: [commentId],
     };
 
     const result = await this._pool.query(query);
-    return result.rows;
+    return result.rows.map((row) => ({
+      ...row,
+      date: row.date.toISOString(),
+    }));
   }
 
   async getRepliesByThreadId(threadId) {
@@ -89,9 +99,11 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     };
 
     const result = await this._pool.query(query);
-    return result.rows;
+    return result.rows.map((row) => ({
+      ...row,
+      date: row.date.toISOString(),
+    }));
   }
 }
 
 module.exports = ReplyRepositoryPostgres;
-

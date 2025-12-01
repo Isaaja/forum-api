@@ -1,7 +1,7 @@
-const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
-const AuthorizationError = require("../../../Commons/exceptions/AuthorizationError");
-const AddedThread = require("../../../Domains/threads/entities/AddedThread");
-const ThreadRepository = require("../../../Domains/threads/ThreadRepository");
+const NotFoundError = require("../../Commons/exceptions/NotFoundError");
+const AuthorizationError = require("../../Commons/exceptions/AuthorizationError");
+const AddedThread = require("../../Domains/threads/entities/AddedThread");
+const ThreadRepository = require("../../Domains/threads/ThreadRepository");
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -25,13 +25,13 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new AddedThread(result.rows[0]);
   }
 
-  async getThreadById(id) {
+  async getThreadById(threadId) {
     const query = {
-      text: `SELECT threads.id, threads.title, threads.body, threads.created_at as date, users.username
-             FROM threads
-             LEFT JOIN users ON threads.owner = users.id
-             WHERE threads.id = $1`,
-      values: [id],
+      text: `SELECT threads.id, threads.title, threads.body, threads.created_at, users.username
+           FROM threads
+           LEFT JOIN users ON threads.owner = users.id
+           WHERE threads.id = $1`,
+      values: [threadId],
     };
 
     const result = await this._pool.query(query);
@@ -40,7 +40,15 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       throw new NotFoundError("thread tidak ditemukan");
     }
 
-    return result.rows[0];
+    const row = result.rows[0];
+
+    return {
+      id: row.id,
+      title: row.title,
+      body: row.body,
+      date: row.created_at.toISOString(),
+      username: row.username,
+    };
   }
 
   async verifyThreadOwner(id, owner) {

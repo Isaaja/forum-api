@@ -47,7 +47,11 @@ class GetThreadDetailUseCase {
     });
 
     return {
-      ...thread,
+      id: thread.id,
+      title: thread.title,
+      body: thread.body,
+      date: thread.date,
+      username: thread.username,
       comments,
     };
   }

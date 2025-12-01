@@ -16,7 +16,7 @@ const ReplyRepository = require("../Domains/replies/ReplyRepository");
 const PasswordHash = require("../Applications/security/PasswordHash");
 
 const UserRepositoryPostgres = require("./repository/UserRepositoryPostgres");
-const ThreadRepositoryPostgres = require("./repository/threads/ThreadRepositoryPostgres");
+const ThreadRepositoryPostgres = require("./repository/ThreadRepositoryPostgres");
 const CommentRepositoryPostgres = require("./repository/CommentRepositoryPostgres");
 const ReplyRepositoryPostgres = require("./repository/ReplyRepositoryPostgres");
 const BcryptPasswordHash = require("./security/BcryptPasswordHash");

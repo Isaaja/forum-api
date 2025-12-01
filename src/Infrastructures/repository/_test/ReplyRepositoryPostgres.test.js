@@ -24,8 +24,15 @@ describe("ReplyRepositoryPostgres", () => {
     it("should persist new reply and return added reply correctly", async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: "user-123" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
 
       const newReply = {
         content: "sebuah balasan",
@@ -59,9 +66,20 @@ describe("ReplyRepositoryPostgres", () => {
     it("should soft delete reply from database", async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: "user-123" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
-      await RepliesTableTestHelper.addReply({ id: "reply-123", commentId: "comment-123", owner: "user-123" });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
+      await RepliesTableTestHelper.addReply({
+        id: "reply-123",
+        commentId: "comment-123",
+        owner: "user-123",
+      });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
@@ -88,9 +106,20 @@ describe("ReplyRepositoryPostgres", () => {
     it("should throw AuthorizationError when owner is not the reply owner", async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: "user-123" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
-      await RepliesTableTestHelper.addReply({ id: "reply-123", commentId: "comment-123", owner: "user-123" });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
+      await RepliesTableTestHelper.addReply({
+        id: "reply-123",
+        commentId: "comment-123",
+        owner: "user-123",
+      });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
@@ -103,16 +132,30 @@ describe("ReplyRepositoryPostgres", () => {
     it("should not throw error when owner is the reply owner", async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: "user-123" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
-      await RepliesTableTestHelper.addReply({ id: "reply-123", commentId: "comment-123", owner: "user-123" });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
+      await RepliesTableTestHelper.addReply({
+        id: "reply-123",
+        commentId: "comment-123",
+        owner: "user-123",
+      });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action and Assert
       await expect(
         replyRepositoryPostgres.verifyReplyOwner("reply-123", "user-123")
-      ).resolves.not.toThrowError();
+      ).resolves.not.toThrowError(NotFoundError);
+      await expect(
+        replyRepositoryPostgres.verifyReplyOwner("reply-123", "user-123")
+      ).resolves.not.toThrowError(AuthorizationError);
     });
   });
 
@@ -130,16 +173,27 @@ describe("ReplyRepositoryPostgres", () => {
     it("should not throw error when reply exists", async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: "user-123" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
-      await RepliesTableTestHelper.addReply({ id: "reply-123", commentId: "comment-123", owner: "user-123" });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
+      await RepliesTableTestHelper.addReply({
+        id: "reply-123",
+        commentId: "comment-123",
+        owner: "user-123",
+      });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action and Assert
       await expect(
         replyRepositoryPostgres.verifyReplyExists("reply-123")
-      ).resolves.not.toThrowError();
+      ).resolves.not.toThrowError(NotFoundError);
     });
   });
 
@@ -149,7 +203,9 @@ describe("ReplyRepositoryPostgres", () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const replies = await replyRepositoryPostgres.getRepliesByCommentId("comment-123");
+      const replies = await replyRepositoryPostgres.getRepliesByCommentId(
+        "comment-123"
+      );
 
       // Assert
       expect(replies).toEqual([]);
@@ -157,9 +213,19 @@ describe("ReplyRepositoryPostgres", () => {
 
     it("should return replies correctly", async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: "user-123", username: "dicoding" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
+      await UsersTableTestHelper.addUser({
+        id: "user-123",
+        username: "dicoding",
+      });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
       await RepliesTableTestHelper.addReply({
         id: "reply-123",
         commentId: "comment-123",
@@ -171,13 +237,18 @@ describe("ReplyRepositoryPostgres", () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const replies = await replyRepositoryPostgres.getRepliesByCommentId("comment-123");
+      const replies = await replyRepositoryPostgres.getRepliesByCommentId(
+        "comment-123"
+      );
 
       // Assert
       expect(replies).toHaveLength(1);
       expect(replies[0].id).toEqual("reply-123");
       expect(replies[0].username).toEqual("dicoding");
       expect(replies[0].content).toEqual("sebuah balasan");
+      expect(new Date(replies[0].date)).toBeInstanceOf(Date);
+      expect(new Date(replies[0].date).getTime()).not.toBeNaN();
+
       expect(replies[0].is_deleted).toEqual(false);
     });
   });
@@ -188,7 +259,9 @@ describe("ReplyRepositoryPostgres", () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const replies = await replyRepositoryPostgres.getRepliesByThreadId("thread-123");
+      const replies = await replyRepositoryPostgres.getRepliesByThreadId(
+        "thread-123"
+      );
 
       // Assert
       expect(replies).toEqual([]);
@@ -196,9 +269,19 @@ describe("ReplyRepositoryPostgres", () => {
 
     it("should return replies correctly", async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: "user-123", username: "dicoding" });
-      await ThreadTableTestHelper.addThread({ id: "thread-123", owner: "user-123" });
-      await CommentsTableTestHelper.addComment({ id: "comment-123", threadId: "thread-123", owner: "user-123" });
+      await UsersTableTestHelper.addUser({
+        id: "user-123",
+        username: "dicoding",
+      });
+      await ThreadTableTestHelper.addThread({
+        id: "thread-123",
+        owner: "user-123",
+      });
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        threadId: "thread-123",
+        owner: "user-123",
+      });
       await RepliesTableTestHelper.addReply({
         id: "reply-123",
         commentId: "comment-123",
@@ -210,7 +293,9 @@ describe("ReplyRepositoryPostgres", () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const replies = await replyRepositoryPostgres.getRepliesByThreadId("thread-123");
+      const replies = await replyRepositoryPostgres.getRepliesByThreadId(
+        "thread-123"
+      );
 
       // Assert
       expect(replies).toHaveLength(1);
@@ -218,8 +303,9 @@ describe("ReplyRepositoryPostgres", () => {
       expect(replies[0].username).toEqual("dicoding");
       expect(replies[0].content).toEqual("sebuah balasan");
       expect(replies[0].comment_id).toEqual("comment-123");
+      expect(new Date(replies[0].date)).toBeInstanceOf(Date);
+      expect(new Date(replies[0].date).getTime()).not.toBeNaN();
       expect(replies[0].is_deleted).toEqual(false);
     });
   });
 });
-

@@ -35,16 +35,29 @@ class CommentRepositoryPostgres extends CommentRepository {
 
   async getCommentsByThreadId(threadId) {
     const query = {
-      text: `SELECT comments.id, comments.content, comments.created_at as date, users.username, comments.is_deleted
-             FROM comments
-             LEFT JOIN users ON comments.owner = users.id
-             WHERE comments.thread_id = $1
-             ORDER BY comments.created_at ASC`,
+      text: `
+      SELECT comments.id,
+             comments.content,
+             comments.created_at::text as date,
+             users.username,
+             comments.is_deleted
+      FROM comments
+      LEFT JOIN users ON comments.owner = users.id
+      WHERE comments.thread_id = $1
+      ORDER BY comments.created_at ASC
+    `,
       values: [threadId],
     };
 
     const result = await this._pool.query(query);
-    return result.rows;
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      content: row.content,
+      date: new Date(row.date + "Z").toISOString(), 
+      username: row.username,
+      is_deleted: row.is_deleted,
+    }));
   }
 
   async verifyCommentOwner(commentId, owner) {
@@ -79,4 +92,3 @@ class CommentRepositoryPostgres extends CommentRepository {
 }
 
 module.exports = CommentRepositoryPostgres;
-
