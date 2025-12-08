@@ -29,6 +29,10 @@ jobs:
       PGUSER_TEST: developer
       PGPASSWORD_TEST: supersecretpassword
       PGDATABASE_TEST: forumapi_test
+      ACCESS_TOKEN_KEY: supersecretaccesstoken
+      REFRESH_TOKEN_KEY: supersecretrefreshtoken
+      ACCESS_TOKEN_AGE: 3000
+      
 
     steps:
       - uses: actions/checkout@v3
