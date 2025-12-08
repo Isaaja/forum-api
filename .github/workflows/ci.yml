@@ -18,10 +18,17 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U developer -d forumapi_test"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+
+    env:
+      PGHOST_TEST: localhost
+      PGPORT_TEST: 5432
+      PGUSER_TEST: developer
+      PGPASSWORD_TEST: supersecretpassword
+      PGDATABASE_TEST: forumapi_test
 
     steps:
       - uses: actions/checkout@v3
@@ -36,7 +43,7 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
+          until pg_isready -h localhost -p 5432 -U developer -d forumapi_test; do
             echo "Waiting for postgres...";
             sleep 2;
           done
@@ -45,4 +52,6 @@ jobs:
         run: npm run migrate:test
 
       - name: Run Tests
+        env:
+          NODE_ENV: test
         run: npm test
