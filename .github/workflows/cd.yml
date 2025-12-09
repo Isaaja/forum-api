@@ -14,15 +14,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Railway CLI
-        run: npm i -g @railway/cli
-
-      - name: Login Railway (CI Mode)
-        run: railway login --json "$RAILWAY_TOKEN"
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: npm install -g @railway/cli
 
       - name: Deploy to Railway
         run: railway up --service=forum-api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: CD Success
-        run: echo "::notice title=CD Status::🎉 CD Berhasil!"
+        run: echo "::notice title=CD Status::🚀 Continuous Deployment Berhasil!"
