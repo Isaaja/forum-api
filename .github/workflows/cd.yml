@@ -14,15 +14,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Debug token
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "❌ RAILWAY_TOKEN is NOT set"
-            exit 1
-          else
-            echo "✅ RAILWAY_TOKEN is set"
-          fi
-
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
