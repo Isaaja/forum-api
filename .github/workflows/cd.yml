@@ -1,0 +1,26 @@
+name: CD - Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Login Railway
+        run: railway login --token 1f30f383-72a9-4402-b717-6d440d5df4d0
+
+      - name: Deploy to Railway
+        run: railway up --service=forum-api
+
+      - name: Deployment Success
+        run: echo "🎉 Deployment berhasil ke Railway!"
