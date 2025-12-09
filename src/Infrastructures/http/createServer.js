@@ -10,8 +10,8 @@ const replies = require("../../Interfaces/http/api/replies");
 
 const createServer = async (container) => {
   const server = Hapi.server({
-    host: process.env.HOST || "0.0.0.0",
-    port: process.env.PORT || 5000,
+    host: process.env.HOST,
+    port: process.env.PORT,
   });
 
   // register external plugin
