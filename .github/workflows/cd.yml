@@ -1,4 +1,4 @@
-name: CD - Deploy to Railway
+name: Continuous Deployment
 
 on:
   push:
@@ -10,17 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: npm i -g @railway/cli
 
-      - name: Login Railway
-        run: railway login --token 1f30f383-72a9-4402-b717-6d440d5df4d0
+      - name: Login Railway (CI Mode)
+        run: echo $RAILWAY_TOKEN | railway login --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy to Railway
         run: railway up --service=forum-api
 
-      - name: Deployment Success
-        run: echo "🎉 Deployment berhasil ke Railway!"
+      - name: CD Success
+        run: echo "::notice title=CD Status::🎉 CD Berhasil!"
