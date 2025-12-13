@@ -20,10 +20,15 @@ describe("GetThreadDetailUseCase", () => {
       getRepliesByThreadId: jest.fn(),
     };
 
+    const mockLikeRepository = {
+      getLikeCountsByThreadId: jest.fn(),
+    };
+
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
     });
 
     // Act & Assert
@@ -94,10 +99,18 @@ describe("GetThreadDetailUseCase", () => {
       getRepliesByThreadId: jest.fn().mockResolvedValue(mockReplies),
     };
 
+    const mockLikeRepository = {
+      getLikeCountsByThreadId: jest.fn().mockResolvedValue({
+        "comment-123": 2,
+        "comment-456": 1,
+      }),
+    };
+
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
     });
 
     // Act
@@ -107,6 +120,7 @@ describe("GetThreadDetailUseCase", () => {
     expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith("thread-123");
     expect(mockCommentRepository.getCommentsByThreadId).toHaveBeenCalledWith("thread-123");
     expect(mockReplyRepository.getRepliesByThreadId).toHaveBeenCalledWith("thread-123");
+    expect(mockLikeRepository.getLikeCountsByThreadId).toHaveBeenCalledWith("thread-123");
     expect(result).toEqual({
       id: "thread-123",
       title: "sebuah thread",
@@ -133,6 +147,7 @@ describe("GetThreadDetailUseCase", () => {
             },
           ],
           content: "sebuah comment",
+          likeCount: 2,
         },
         {
           id: "comment-456",
@@ -140,6 +155,7 @@ describe("GetThreadDetailUseCase", () => {
           date: "2021-08-08T07:26:21.338Z",
           replies: [],
           content: "**komentar telah dihapus**",
+          likeCount: 1,
         },
       ],
     });
@@ -171,10 +187,15 @@ describe("GetThreadDetailUseCase", () => {
       getRepliesByThreadId: jest.fn().mockResolvedValue([]),
     };
 
+    const mockLikeRepository = {
+      getLikeCountsByThreadId: jest.fn().mockResolvedValue({}),
+    };
+
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
     });
 
     // Act
