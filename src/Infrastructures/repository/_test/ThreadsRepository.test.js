@@ -152,4 +152,37 @@ describe("ThreadRepositoryPostgres", () => {
       ).resolves.not.toThrowError(AuthorizationError);
     });
   });
+
+  describe("verifyThreadExists function", () => {
+    it("should throw NotFoundError when thread not found", async () => {
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+        pool,
+        () => "123"
+      );
+
+      await expect(
+        threadRepositoryPostgres.verifyThreadExists("thread-x")
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it("should not throw error when thread exists", async () => {
+      // Arrange
+      await ThreadsTableTestHelper.addThread({
+        id: "thread-123",
+        title: "judul",
+        body: "isi",
+        owner: "user-123",
+      });
+
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+        pool,
+        () => "123"
+      );
+
+      // Action & Assert
+      await expect(
+        threadRepositoryPostgres.verifyThreadExists("thread-123")
+      ).resolves.not.toThrowError(NotFoundError);
+    });
+  });
 });
