@@ -24,11 +24,11 @@ jobs:
           --health-retries=5
 
     env:
-      PGHOST_TEST: localhost
-      PGPORT_TEST: 5432
-      PGUSER_TEST: developer
-      PGPASSWORD_TEST: supersecretpassword
-      PGDATABASE_TEST: forumapi_test
+      PGHOST: localhost
+      PGUSER: developer
+      PGDATABASE: forumapi_test
+      PGPASSWORD: supersecretpassword
+      PGPORT: 5432
       ACCESS_TOKEN_KEY: supersecretaccesstoken
       REFRESH_TOKEN_KEY: supersecretrefreshtoken
       ACCESS_TOKEN_AGE: 3000
