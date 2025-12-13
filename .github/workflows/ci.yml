@@ -24,7 +24,11 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL_TEST: "postgresql://postgres:HsIGIVeuNckhxEAqihhJMuXdOiaNUNbA@postgres-kxlg.railway.internal:5432/railway"
+      PGHOST: localhost
+      PGUSER: developer
+      PGDATABASE: forumapi_test
+      PGPASSWORD: supersecretpassword
+      PGPORT: 5432
       ACCESS_TOKEN_KEY: supersecretaccesstoken
       REFRESH_TOKEN_KEY: supersecretrefreshtoken
       ACCESS_TOKEN_AGE: 3000
