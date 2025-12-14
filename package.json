@@ -15,17 +15,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hapi/catbox-redis": "^7.0.2",
     "@hapi/hapi": "^20.1.5",
     "@hapi/jwt": "^2.0.1",
     "auto-bind": "^5.0.1",
     "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
-    "hapi-rate-limit": "^8.0.0",
     "instances-container": "^2.0.3",
+    "ioredis": "^5.8.2",
     "nanoid": "^3.1.23",
     "pg": "^8.6.0",
-    "redis": "^5.10.0"
+    "rate-limiter-flexible": "^9.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -38,8 +37,5 @@
     "jest": "^27.0.6",
     "node-pg-migrate": "^5.10.0",
     "nodemon": "^2.0.9"
-  },
-  "engines": {
-    "node": ">=18 <20"
   }
 }
