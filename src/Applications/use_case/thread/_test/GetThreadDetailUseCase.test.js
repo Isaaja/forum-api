@@ -9,7 +9,9 @@ describe("GetThreadDetailUseCase", () => {
     };
 
     const mockThreadRepository = {
-      getThreadById: jest.fn().mockRejectedValue(new NotFoundError("thread tidak ditemukan")),
+      getThreadById: jest
+        .fn()
+        .mockRejectedValue(new NotFoundError("thread tidak ditemukan")),
     };
 
     const mockCommentRepository = {
@@ -32,8 +34,12 @@ describe("GetThreadDetailUseCase", () => {
     });
 
     // Act & Assert
-    await expect(getThreadDetailUseCase.execute(useCasePayload)).rejects.toThrow(NotFoundError);
-    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith("thread-123");
+    await expect(
+      getThreadDetailUseCase.execute(useCasePayload)
+    ).rejects.toThrow(NotFoundError);
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(
+      "thread-123"
+    );
     expect(mockCommentRepository.getCommentsByThreadId).not.toHaveBeenCalled();
   });
 
@@ -117,10 +123,18 @@ describe("GetThreadDetailUseCase", () => {
     const result = await getThreadDetailUseCase.execute(useCasePayload);
 
     // Assert
-    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith("thread-123");
-    expect(mockCommentRepository.getCommentsByThreadId).toHaveBeenCalledWith("thread-123");
-    expect(mockReplyRepository.getRepliesByThreadId).toHaveBeenCalledWith("thread-123");
-    expect(mockLikeRepository.getLikeCountsByThreadId).toHaveBeenCalledWith("thread-123");
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(
+      "thread-123"
+    );
+    expect(mockCommentRepository.getCommentsByThreadId).toHaveBeenCalledWith(
+      "thread-123"
+    );
+    expect(mockReplyRepository.getRepliesByThreadId).toHaveBeenCalledWith(
+      "thread-123"
+    );
+    expect(mockLikeRepository.getLikeCountsByThreadId).toHaveBeenCalledWith(
+      "thread-123"
+    );
     expect(result).toEqual({
       id: "thread-123",
       title: "sebuah thread",
@@ -203,5 +217,60 @@ describe("GetThreadDetailUseCase", () => {
 
     // Assert
     expect(result.comments).toEqual([]);
+  });
+
+  it("should return likeCount 0 when comment has no likes", async () => {
+    // Arrange
+    const useCasePayload = {
+      threadId: "thread-123",
+    };
+
+    const mockThread = {
+      id: "thread-123",
+      title: "sebuah thread",
+      body: "sebuah body thread",
+      date: "2021-08-08T07:19:09.775Z",
+      username: "dicoding",
+    };
+
+    const mockComments = [
+      {
+        id: "comment-123",
+        username: "johndoe",
+        date: "2021-08-08T07:22:33.555Z",
+        content: "sebuah comment",
+        is_deleted: false,
+      },
+    ];
+
+    const mockThreadRepository = {
+      getThreadById: jest.fn().mockResolvedValue(mockThread),
+    };
+
+    const mockCommentRepository = {
+      getCommentsByThreadId: jest.fn().mockResolvedValue(mockComments),
+    };
+
+    const mockReplyRepository = {
+      getRepliesByThreadId: jest.fn().mockResolvedValue([]),
+    };
+
+    const mockLikeRepository = {
+      // No likes for comment-123, should fallback to 0
+      getLikeCountsByThreadId: jest.fn().mockResolvedValue({}),
+    };
+
+    const getThreadDetailUseCase = new GetThreadDetailUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
+    });
+
+    // Act
+    const result = await getThreadDetailUseCase.execute(useCasePayload);
+
+    // Assert
+    expect(result.comments[0].likeCount).toBe(0);
   });
 });

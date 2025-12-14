@@ -5,6 +5,14 @@ const routes = (handler) => [
     handler: handler.postCommentHandler,
     options: {
       auth: "forumapi_jwt",
+      plugins: {
+        "hapi-rate-limit": {
+          pathLimit: 90, // 90 requests
+          pathCache: {
+            expiresIn: 60000, // per 1 minute (60000 ms)
+          },
+        },
+      },
     },
   },
   {
@@ -13,6 +21,14 @@ const routes = (handler) => [
     handler: handler.deleteCommentHandler,
     options: {
       auth: "forumapi_jwt",
+      plugins: {
+        "hapi-rate-limit": {
+          pathLimit: 90, // 90 requests
+          pathCache: {
+            expiresIn: 60000, // per 1 minute (60000 ms)
+          },
+        },
+      },
     },
   },
   {
@@ -21,6 +37,14 @@ const routes = (handler) => [
     handler: handler.putLikeCommentHandler,
     options: {
       auth: "forumapi_jwt",
+      plugins: {
+        "hapi-rate-limit": {
+          pathLimit: 90, // 90 requests
+          pathCache: {
+            expiresIn: 60000, // per 1 minute (60000 ms)
+          },
+        },
+      },
     },
   },
 ];

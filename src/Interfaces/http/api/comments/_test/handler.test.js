@@ -53,4 +53,27 @@ describe("CommentsHandler", () => {
 
     expect(response.status).toBe("success");
   });
+
+  test("putLikeCommentHandler should response success", async () => {
+    const mockContainer = {
+      getInstance: jest.fn().mockReturnValue({
+        execute: jest.fn().mockResolvedValue(),
+      }),
+    };
+
+    const handler = new CommentsHandler(mockContainer);
+
+    const request = {
+      params: { threadId: "thread-1", commentId: "comment-1" },
+      auth: { credentials: { id: "user-1" } },
+    };
+
+    const h = {
+      response: (body) => body,
+    };
+
+    const response = await handler.putLikeCommentHandler(request, h);
+
+    expect(response.status).toBe("success");
+  });
 });
