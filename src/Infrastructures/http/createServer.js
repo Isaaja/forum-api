@@ -31,6 +31,8 @@ const createServer = async (container) => {
         enabled: true,
         userLimit: false, // disable default user limit
         pathLimit: false, // disable default path limit (we'll set per-route)
+        trustProxy: true, // Trust X-Forwarded-For header from Railway's proxy
+        headers: true, // Include rate limit headers in response
       },
     });
   }
