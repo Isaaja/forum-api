@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@hapi/catbox-redis": "^7.0.2",
     "@hapi/hapi": "^20.1.5",
     "@hapi/jwt": "^2.0.1",
     "auto-bind": "^5.0.1",
@@ -23,7 +24,8 @@
     "hapi-rate-limit": "^8.0.0",
     "instances-container": "^2.0.3",
     "nanoid": "^3.1.23",
-    "pg": "^8.6.0"
+    "pg": "^8.6.0",
+    "redis": "^5.10.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
