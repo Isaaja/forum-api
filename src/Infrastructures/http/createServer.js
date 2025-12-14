@@ -75,9 +75,9 @@ const createServer = async (container) => {
 
   // Create rate limiter (Redis or Memory based on environment)
   /* istanbul ignore next */
-  let rateLimiter = null;
-  if (!isTestEnv) {
-    rateLimiter = createRateLimiter();
+  const rateLimiter = isTestEnv ? null : createRateLimiter();
+  /* istanbul ignore next */
+  if (rateLimiter) {
     const useRedis =
       process.env.REDIS_URL && process.env.NODE_ENV === "production";
     console.log(
@@ -98,7 +98,7 @@ const createServer = async (container) => {
 
   // Rate limiting middleware for /threads endpoints
   /* istanbul ignore next */
-  if (!isTestEnv && rateLimiter) {
+  if (rateLimiter) {
     server.ext("onPreHandler", async (request, h) => {
       // Only apply rate limiting to /threads endpoints
       if (!request.path.startsWith("/threads")) {
