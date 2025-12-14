@@ -19,33 +19,31 @@ const RATE_LIMIT_DURATION = 60; // per 60 seconds (1 minute)
 
 /* istanbul ignore next */
 const createRateLimiter = () => {
-  // Use Redis if REDIS_URL is available (works in any environment)
-  if (process.env.REDIS_URL) {
+  // Use Redis if REDIS_URL is available and we're in production
+  if (process.env.REDIS_URL && process.env.NODE_ENV === "production") {
     try {
       const redisClient = new Redis(process.env.REDIS_URL, {
         enableOfflineQueue: false,
-        maxRetriesPerRequest: 3,
-        connectTimeout: 10000,
-        retryStrategy: (times) => {
-          if (times > 3) return null;
-          return Math.min(times * 200, 2000);
-        },
+        maxRetriesPerRequest: 1,
+        connectTimeout: 5000,
+        lazyConnect: true,
       });
 
       redisClient.on("error", (err) => {
         console.error("Redis error:", err.message);
       });
 
-      redisClient.on("connect", () => {
-        console.log("Redis connected successfully");
+      // Test connection
+      redisClient.connect().catch((err) => {
+        console.error("Redis connection failed:", err.message);
       });
 
       return new RateLimiterRedis({
         storeClient: redisClient,
-        keyPrefix: "rate-limit-threads",
+        keyPrefix: "rate-limit",
         points: RATE_LIMIT_POINTS,
         duration: RATE_LIMIT_DURATION,
-        blockDuration: 0,
+        blockDuration: 0, // Do not block, just reject
         insuranceLimiter: new RateLimiterMemory({
           points: RATE_LIMIT_POINTS,
           duration: RATE_LIMIT_DURATION,
@@ -60,7 +58,6 @@ const createRateLimiter = () => {
   }
 
   // Fallback to in-memory rate limiter
-  console.log("Using in-memory rate limiter (no REDIS_URL provided)");
   return new RateLimiterMemory({
     points: RATE_LIMIT_POINTS,
     duration: RATE_LIMIT_DURATION,
@@ -78,16 +75,15 @@ const createServer = async (container) => {
 
   // Create rate limiter (Redis or Memory based on environment)
   /* istanbul ignore next */
-  const rateLimiter = isTestEnv ? null : createRateLimiter();
-  /* istanbul ignore next */
-  if (rateLimiter) {
+  let rateLimiter = null;
+  if (!isTestEnv) {
+    rateLimiter = createRateLimiter();
+    const useRedis =
+      process.env.REDIS_URL && process.env.NODE_ENV === "production";
     console.log(
       `Rate limiter initialized: ${
-        process.env.REDIS_URL ? "Redis (with in-memory fallback)" : "In-Memory"
+        useRedis ? "Redis (with in-memory fallback)" : "In-Memory"
       }`
-    );
-    console.log(
-      `Rate limit: ${RATE_LIMIT_POINTS} requests per ${RATE_LIMIT_DURATION} seconds`
     );
   }
 
@@ -100,32 +96,25 @@ const createServer = async (container) => {
 
   await server.register(plugins);
 
-  // Rate limiting middleware for /threads endpoints (using onRequest for earliest interception)
+  // Rate limiting middleware for /threads endpoints
   /* istanbul ignore next */
-  if (rateLimiter) {
-    server.ext("onRequest", async (request, h) => {
-      // Only apply rate limiting to paths starting with /threads
-      // This includes: /threads, /threads/{id}, /threads/{id}/comments, etc.
-      const path = request.path;
-      if (path !== "/threads" && !path.startsWith("/threads/")) {
+  if (!isTestEnv && rateLimiter) {
+    server.ext("onPreHandler", async (request, h) => {
+      // Only apply rate limiting to /threads endpoints
+      if (!request.path.startsWith("/threads")) {
         return h.continue;
       }
 
-      // Get client IP (support for reverse proxy like Railway)
-      const forwardedFor = request.headers["x-forwarded-for"];
-      const clientIp = forwardedFor
-        ? forwardedFor.split(",")[0].trim()
-        : request.info.remoteAddress;
+      // Get client IP (support for proxy)
+      const clientIp =
+        request.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        request.info.remoteAddress;
 
       try {
-        const rateLimitRes = await rateLimiter.consume(clientIp);
-        // Add rate limit headers to successful requests
-        request.headers["x-ratelimit-limit"] = RATE_LIMIT_POINTS;
-        request.headers["x-ratelimit-remaining"] = rateLimitRes.remainingPoints;
+        await rateLimiter.consume(clientIp);
         return h.continue;
       } catch (rejRes) {
         // Rate limit exceeded
-        console.log(`Rate limit exceeded for IP: ${clientIp}`);
         const response = h.response({
           status: "fail",
           message: "Too many requests. Please try again later.",
@@ -133,14 +122,15 @@ const createServer = async (container) => {
         response.code(429);
 
         // Add rate limit headers
-        const retryAfter = Math.ceil((rejRes.msBeforeNext || 60000) / 1000);
-        response.header("Retry-After", retryAfter);
-        response.header("X-RateLimit-Limit", RATE_LIMIT_POINTS);
-        response.header("X-RateLimit-Remaining", 0);
-        response.header(
-          "X-RateLimit-Reset",
-          new Date(Date.now() + (rejRes.msBeforeNext || 60000)).toISOString()
-        );
+        if (rejRes.msBeforeNext) {
+          response.header("Retry-After", Math.ceil(rejRes.msBeforeNext / 1000));
+          response.header("X-RateLimit-Limit", RATE_LIMIT_POINTS);
+          response.header("X-RateLimit-Remaining", 0);
+          response.header(
+            "X-RateLimit-Reset",
+            new Date(Date.now() + rejRes.msBeforeNext).toISOString()
+          );
+        }
 
         return response.takeover();
       }
