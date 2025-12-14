@@ -1,5 +1,6 @@
 const Hapi = require("@hapi/hapi");
 const Jwt = require("@hapi/jwt");
+const HapiRateLimit = require("hapi-rate-limit");
 const ClientError = require("../../Commons/exceptions/ClientError");
 const DomainErrorTranslator = require("../../Commons/exceptions/DomainErrorTranslator");
 const users = require("../../Interfaces/http/api/users");
@@ -13,13 +14,28 @@ const createServer = async (container) => {
     host: process.env.HOST,
     port: process.env.PORT,
   });
-  //
+
   // register external plugin
-  await server.register([
+  const plugins = [
     {
       plugin: Jwt,
     },
-  ]);
+  ];
+
+  // Only register rate limit plugin in non-test environment
+  /* istanbul ignore next */
+  if (process.env.NODE_ENV !== "test") {
+    plugins.push({
+      plugin: HapiRateLimit,
+      options: {
+        enabled: true,
+        userLimit: false, // disable default user limit
+        pathLimit: false, // disable default path limit (we'll set per-route)
+      },
+    });
+  }
+
+  await server.register(plugins);
 
   // define jwt authentication strategy
   server.auth.strategy("forumapi_jwt", "jwt", {
