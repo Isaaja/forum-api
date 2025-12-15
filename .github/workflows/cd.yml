@@ -8,19 +8,22 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: forum-api / production
+    environment: aws-productions
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        run: railway up --service=forum-api
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: SSH and deploy app
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/forum-api
+            git pull origin master
+            npm install
+            npm run migrate up
+            pm2 restart forum-api
 
       - name: CD Success
         run: echo "::notice title=CD Status::🚀 Continuous Deployment Berhasil!"
