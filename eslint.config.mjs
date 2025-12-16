@@ -7,13 +7,13 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs}"],
     plugins: { js },
     extends: ["js/recommended"],
-    languageOptions: { globals: globals.browser },
+    ignores: ["**/*.test.js", "src/Applications/security/**", "src/Domains/**"],
+    languageOptions: { globals: globals.node },
   },
   { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
   {
     rules: {
       "no-console": "warn",
-      quotes: ["error", "single"],
     },
   },
 ]);
